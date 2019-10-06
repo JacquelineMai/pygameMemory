@@ -18,28 +18,30 @@ card_back = pygame.image.load('imgs/card_back.png').convert_alpha()
 card_back = pygame.transform.scale(card_back, (CARD_SIZE, CARD_SIZE))
 
 img_arr = []
-for i in range(NUM_IMGS):
-	file_name = 'imgs/card_'+str(i)+'.png'
-	img_arr.append(pygame.image.load(file_name).convert_alpha())
-	img_arr[-1] = pygame.transform.scale(img_arr[-1], (CARD_SIZE, CARD_SIZE))
-
 card_arr = []
 
-for i in range(GRID_SIZE**2):
-	if i < NUM_IMGS:
-		card_arr.append(Card(i, CARD_SIZE))
-	else:
-		card_arr.append(Card(i-NUM_IMGS, CARD_SIZE))
+def setup():
+	for i in range(NUM_IMGS):
+		file_name = 'imgs/card_'+str(i)+'.png'
+		img_arr.append(pygame.image.load(file_name).convert_alpha())
+		img_arr[-1] = pygame.transform.scale(img_arr[-1], (CARD_SIZE, CARD_SIZE))
 
-random.shuffle(card_arr)
 
-for i in range(GRID_SIZE):
-	for j in range(GRID_SIZE):
-		curr_pos = GRID_SIZE*(i)+j
-		x = ((CARD_SIZE*i)+5*(i+1))
-		y = ((CARD_SIZE*j)+5*(j+1))
-		card_arr[curr_pos].rect.x = x
-		card_arr[curr_pos].rect.y = y
+	for i in range(GRID_SIZE**2):
+		if i < NUM_IMGS:
+			card_arr.append(Card(i, CARD_SIZE))
+		else:
+			card_arr.append(Card(i-NUM_IMGS, CARD_SIZE))
+
+	random.shuffle(card_arr)
+
+	for i in range(GRID_SIZE):
+		for j in range(GRID_SIZE):
+			curr_pos = GRID_SIZE*(i)+j
+			x = ((CARD_SIZE*i)+5*(i+1))
+			y = ((CARD_SIZE*j)+5*(j+1))
+			card_arr[curr_pos].rect.x = x
+			card_arr[curr_pos].rect.y = y
 
 def show_grid(grid_size):
 	curr = 0
@@ -54,24 +56,26 @@ def show_grid(grid_size):
 def endGame():
 	gameDisplay.fill(pygame.Color(255,255,255))
 	pygame.display.flip()
-	
-	font = pygame.font.SysFont('Arial',100)
-	text = font.render('You did it!', False, (255,255,255))
-	gameDisplay.blit(text,(0,785/2))
+
+	msg = pygame.image.load('imgs/end_game.png').convert_alpha()
+	msg = pygame.transform.scale(msg, (725,200))
+	gameDisplay.blit(msg, (10, 300))
+
 	pygame.display.flip()
 
-	pygame.time.wait(1000)
+	pygame.time.wait(3000)
 	pygame.quit()
 
 def main():
-	endGame()
-
 	playGame = True
 	num_flipped = 0
 	total_solved = 0
 	player_points = 0
 	first_card = None
 	second_card = None
+
+	setup()
+
 	while playGame:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -101,8 +105,6 @@ def main():
 				first_card = None
 				second_card = None
 				num_flipped = 0
-
-			print("total solved: "+str(total_solved))
 
 		show_grid(GRID_SIZE)
 		pygame.display.update()
