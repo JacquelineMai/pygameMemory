@@ -3,6 +3,7 @@ import random
 from card import Card
 
 pygame.init()
+pygame.font.init()
 
 gameDisplay = pygame.display.set_mode((785,785))
 pygame.display.set_caption('A Game of Memory')
@@ -23,17 +24,7 @@ for i in range(NUM_IMGS):
 	img_arr[-1] = pygame.transform.scale(img_arr[-1], (CARD_SIZE, CARD_SIZE))
 
 card_arr = []
-'''
-for i in range(GRID_SIZE):
-	for j in range(GRID_SIZE):
-		curr_pos = GRID_SIZE*(i)+j
-		x = ((CARD_SIZE*i)+5*(i+1))
-		y = ((CARD_SIZE*j)+5*(j+1))
-		if curr_pos < NUM_IMGS:
-			card_arr.append(Card(curr_pos, x, y, CARD_SIZE))
-		else:
-			card_arr.append(Card(curr_pos-NUM_IMGS, x, y, CARD_SIZE))
-'''
+
 for i in range(GRID_SIZE**2):
 	if i < NUM_IMGS:
 		card_arr.append(Card(i, CARD_SIZE))
@@ -54,20 +45,65 @@ def show_grid(grid_size):
 	curr = 0
 	for i in range(0,grid_size):
 		for j in range(0,grid_size):
-			if card_arr[curr].face_up:
+			if card_arr[curr].face_up or card_arr[curr].solved:
 				gameDisplay.blit(img_arr[card_arr[curr].img_id], ((CARD_SIZE*i)+5*(i+1),(CARD_SIZE*j)+5*(j+1)))
 			else:
 				gameDisplay.blit(card_back, ((CARD_SIZE*i)+5*(i+1),(CARD_SIZE*j)+5*(j+1)))
 			curr += 1
 
+def endGame():
+	gameDisplay.fill(pygame.Color(255,255,255))
+	pygame.display.flip()
+	
+	font = pygame.font.SysFont('Arial',100)
+	text = font.render('You did it!', False, (255,255,255))
+	gameDisplay.blit(text,(0,785/2))
+	pygame.display.flip()
+
+	pygame.time.wait(1000)
+	pygame.quit()
+
 def main():
+	endGame()
+
 	playGame = True
+	num_flipped = 0
+	total_solved = 0
+	player_points = 0
+	first_card = None
+	second_card = None
 	while playGame:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				playGame = False	
+				playGame = False
+		if total_solved == GRID_SIZE**2:
+			endGame()
 		for card in card_arr:
 			card.detectMouse()
+			if card.face_up and not(card.solved):
+				if (first_card == None):
+					first_card = card
+					num_flipped += 1
+				elif (first_card != card and second_card == None):
+					second_card = card
+					num_flipped += 1
+			if num_flipped == 2:
+				if first_card.img_id == second_card.img_id:
+					pygame.time.wait(500)
+					player_points += 1
+					first_card.solved = True
+					second_card.solved = True
+					total_solved+=2
+				else:
+					pygame.time.wait(500)
+					first_card.flip()
+					second_card.flip()
+				first_card = None
+				second_card = None
+				num_flipped = 0
+
+			print("total solved: "+str(total_solved))
+
 		show_grid(GRID_SIZE)
 		pygame.display.update()
 		clock.tick(30)
